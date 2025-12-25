@@ -27,8 +27,19 @@ echo "   ✓ Gemini CLI configured (OAuth mode)"
 # Configure GitHub CLI
 mkdir -p ~/.config/gh
 if [ ! -f ~/.config/gh/hosts.yml ]; then
-    echo "📝 GitHub CLI not authenticated - will prompt on first use"
-    echo "   Run 'gh auth login' to authenticate"
+    # Check for GH_TOKEN secret (from Codespaces/Dev Container secrets)
+    if [ -n "$GH_TOKEN" ]; then
+        echo "🔐 Authenticating GitHub CLI from secret..."
+        echo "$GH_TOKEN" | gh auth login --with-token 2>/dev/null
+        if gh auth status &>/dev/null; then
+            echo "   ✓ GitHub CLI authenticated from GH_TOKEN secret"
+        else
+            echo "   ⚠️  GH_TOKEN auth failed - run 'gh auth login' manually"
+        fi
+    else
+        echo "📝 GitHub CLI not authenticated"
+        echo "   Run 'gh auth login' or set GH_TOKEN secret"
+    fi
 else
     echo "   ✓ GitHub CLI already configured"
 fi
